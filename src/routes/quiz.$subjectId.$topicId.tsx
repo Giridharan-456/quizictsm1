@@ -90,7 +90,7 @@ function QuizPage() {
   return (
     <>
       <AmbientBackground />
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-6">
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-10 pt-6 md:max-w-2xl md:px-8">
         <header className="flex items-center justify-between">
           <button
             onClick={() =>
