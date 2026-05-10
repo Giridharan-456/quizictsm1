@@ -20,6 +20,39 @@ function SubjectPage() {
   const navigate = useNavigate();
   const subject = getSubject(subjectId);
 
+  // Desktop keyboard shortcuts
+  useEffect(() => {
+    if (!subject) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && /^(input|textarea|select)$/i.test(target.tagName)) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        navigate({ to: "/" });
+        return;
+      }
+      if (e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        navigate({
+          to: "/quiz/$subjectId/$topicId",
+          params: { subjectId: subject.id, topicId: "all" },
+        });
+        return;
+      }
+      const n = parseInt(e.key, 10);
+      if (!Number.isNaN(n) && n >= 1 && n <= Math.min(9, subject.topics.length)) {
+        e.preventDefault();
+        navigate({
+          to: "/quiz/$subjectId/$topicId",
+          params: { subjectId: subject.id, topicId: subject.topics[n - 1].id },
+        });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [subject, navigate]);
+
   if (!subject) {
     return (
       <main className="mx-auto max-w-md px-5 py-10">
