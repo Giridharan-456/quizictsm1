@@ -65,7 +65,7 @@ function Home() {
           >
             Welcome back
           </div>
-          <h1 className="mt-2 text-[2.5rem] font-bold leading-[1.05] tracking-tight">
+          <h1 className="mt-2 text-[2.5rem] font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
             Master your <br />
             <span
               className="bg-clip-text text-transparent"
