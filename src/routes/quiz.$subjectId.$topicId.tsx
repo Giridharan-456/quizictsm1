@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -46,18 +46,31 @@ function QuizPage() {
   const done = index >= total;
   const q = !done ? topic.questions[index] : null;
 
-  const onPick = (key: "A" | "B" | "C" | "D") => {
-    if (picked || !q) return;
-    setPicked(key);
-    if (key === q.answer) setScore((s) => s + 1);
-  };
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const next = () => {
+  const advance = () => {
     setPicked(null);
     setIndex((i) => i + 1);
   };
 
+  const onPick = (key: "A" | "B" | "C" | "D") => {
+    if (picked || !q) return;
+    setPicked(key);
+    const correct = key === q.answer;
+    if (correct) setScore((s) => s + 1);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(advance, correct ? 450 : 1500);
+  };
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
+
   const restart = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setIndex(0);
     setPicked(null);
     setScore(0);
