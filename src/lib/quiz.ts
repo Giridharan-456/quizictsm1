@@ -34,18 +34,37 @@ const loaders: Record<string, () => Promise<Record<string, any[]>>> = {
 
 const cache = new Map<string, Question[]>();
 
+function isValidOption(v: unknown): v is string {
+  if (typeof v !== "string") return false;
+  const t = v.trim();
+  if (!t) return false;
+  // Reject single punctuation-only fragments like "," "." "?" that came from broken parsing.
+  if (t.length <= 1 && !/[a-z0-9]/i.test(t)) return false;
+  return true;
+}
+
 function toQuestions(raw: any[], topicSlug: string): Question[] {
-  return raw.map((q, i) => ({
-    id: `${topicSlug}-${i}`,
-    question: q.question,
-    options: [
-      { key: "A", text: q.option_a },
-      { key: "B", text: q.option_b },
-      { key: "C", text: q.option_c },
-      { key: "D", text: q.option_d },
-    ],
-    answer: (q.answer || "A").trim().toUpperCase() as "A",
-  }));
+  const out: Question[] = [];
+  raw.forEach((q, i) => {
+    const opts = [q.option_a, q.option_b, q.option_c, q.option_d];
+    if (!opts.every(isValidOption)) return;
+    // Drop questions where all options are identical (corrupt rows).
+    const uniq = new Set(opts.map((o: string) => o.trim().toLowerCase()));
+    if (uniq.size < 2) return;
+    if (!q.question || typeof q.question !== "string" || !q.question.trim()) return;
+    out.push({
+      id: `${topicSlug}-${i}`,
+      question: q.question,
+      options: [
+        { key: "A", text: opts[0] },
+        { key: "B", text: opts[1] },
+        { key: "C", text: opts[2] },
+        { key: "D", text: opts[3] },
+      ],
+      answer: (q.answer || "A").trim().toUpperCase() as "A",
+    });
+  });
+  return out;
 }
 
 export async function loadTopic(
