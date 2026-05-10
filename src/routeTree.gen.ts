@@ -9,16 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectSubjectIdRouteImport } from './routes/subject.$subjectId'
 import { Route as QuizSubjectIdTopicIdRouteImport } from './routes/quiz.$subjectId.$topicId'
 
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,52 +31,36 @@ const QuizSubjectIdTopicIdRoute = QuizSubjectIdTopicIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/home': typeof HomeRoute
   '/subject/$subjectId': typeof SubjectSubjectIdRoute
   '/quiz/$subjectId/$topicId': typeof QuizSubjectIdTopicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/home': typeof HomeRoute
   '/subject/$subjectId': typeof SubjectSubjectIdRoute
   '/quiz/$subjectId/$topicId': typeof QuizSubjectIdTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/home': typeof HomeRoute
   '/subject/$subjectId': typeof SubjectSubjectIdRoute
   '/quiz/$subjectId/$topicId': typeof QuizSubjectIdTopicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/subject/$subjectId' | '/quiz/$subjectId/$topicId'
+  fullPaths: '/' | '/subject/$subjectId' | '/quiz/$subjectId/$topicId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/subject/$subjectId' | '/quiz/$subjectId/$topicId'
-  id:
-    | '__root__'
-    | '/'
-    | '/home'
-    | '/subject/$subjectId'
-    | '/quiz/$subjectId/$topicId'
+  to: '/' | '/subject/$subjectId' | '/quiz/$subjectId/$topicId'
+  id: '__root__' | '/' | '/subject/$subjectId' | '/quiz/$subjectId/$topicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  HomeRoute: typeof HomeRoute
   SubjectSubjectIdRoute: typeof SubjectSubjectIdRoute
   QuizSubjectIdTopicIdRoute: typeof QuizSubjectIdTopicIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -109,7 +87,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  HomeRoute: HomeRoute,
   SubjectSubjectIdRoute: SubjectSubjectIdRoute,
   QuizSubjectIdTopicIdRoute: QuizSubjectIdTopicIdRoute,
 }

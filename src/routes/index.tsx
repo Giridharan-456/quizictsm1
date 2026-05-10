@@ -1,7 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Sparkles, User } from "lucide-react";
-import { getUserName, setUserName } from "@/lib/user";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Briefcase, Monitor, Sparkles } from "lucide-react";
+import { subjects } from "@/lib/quiz";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,75 +18,74 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: Welcome,
+  component: Home,
 });
 
-function Welcome() {
-  const navigate = useNavigate();
-  const [name, setName] = useState("");
+const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  "ictsm-theory": Monitor,
+  "employability-skills": Briefcase,
+};
 
-  useEffect(() => {
-    const existing = getUserName();
-    if (existing) navigate({ to: "/home" });
-  }, [navigate]);
-
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    const n = String(data.get("name") || "").trim();
-    if (!n) return;
-    setUserName(n);
-    navigate({ to: "/home" });
-  };
-
+function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center text-center">
-          <div
-            className="flex h-20 w-20 items-center justify-center rounded-3xl shadow-lg"
-            style={{ background: "var(--gradient-ictsm)" }}
-          >
-            <Sparkles className="h-10 w-10 text-white" />
-          </div>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground">
-            ICTSM Quiz
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Master your skills, one question at a time
-          </p>
-        </div>
-
-        <form
-          onSubmit={submit}
-          className="mt-10 rounded-2xl border border-border bg-card/60 p-5 backdrop-blur"
+    <main className="mx-auto min-h-screen max-w-md px-5 pb-12 pt-10">
+      <header className="flex flex-col items-center text-center">
+        <div
+          className="flex h-16 w-16 items-center justify-center rounded-3xl shadow-lg"
+          style={{ background: "var(--gradient-ictsm)" }}
         >
-          <label className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-            Your name to begin
-          </label>
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-background/60 px-3">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <input
-              autoFocus
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="w-full bg-transparent py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-            />
-          </div>
-          <button
-            type="submit"
-            className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
-          >
-            Start Playing
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          ITI ICTSM 2nd Year · Practice &amp; Learn
+          <Sparkles className="h-8 w-8 text-white" />
+        </div>
+        <h1 className="mt-5 text-3xl font-bold tracking-tight">ICTSM Quiz</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Master your skills, one question at a time
         </p>
+      </header>
+
+      <h2 className="mt-10 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        Subjects
+      </h2>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {subjects.map((s) => {
+          const Icon = ICONS[s.id] ?? Monitor;
+          const total = s.topics.reduce((n, t) => n + t.questions.length, 0);
+          return (
+            <Link
+              key={s.id}
+              to="/subject/$subjectId"
+              params={{ subjectId: s.id }}
+              className="group relative overflow-hidden rounded-3xl p-5 text-white shadow-[var(--shadow-card)] transition active:scale-[0.98]"
+              style={{ background: s.gradient }}
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+                <Icon className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="mt-8 text-2xl font-bold leading-tight">
+                {s.name}
+              </h3>
+              <div className="mt-4 flex items-end justify-between text-xs text-white/80">
+                <div>
+                  <div className="text-base font-semibold text-white">
+                    {s.topics.length}
+                  </div>
+                  <div>topics</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-base font-semibold text-white">
+                    {total}
+                  </div>
+                  <div>questions</div>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
+
+      <p className="mt-10 text-center text-xs text-muted-foreground">
+        ITI ICTSM 2nd Year · Practice &amp; Learn
+      </p>
     </main>
   );
 }
