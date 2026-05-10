@@ -162,7 +162,17 @@ function SubjectPage() {
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="flex shrink-0 items-center gap-2">
+                  {i < 9 && (
+                    <kbd
+                      className="hidden rounded-md border border-border bg-background/50 px-1.5 py-0.5 text-[10px] text-muted-foreground md:inline-block"
+                      style={{ fontFamily: "var(--font-mono)" }}
+                    >
+                      {i + 1}
+                    </kbd>
+                  )}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
               </Link>
             </li>
           ))}
