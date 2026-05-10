@@ -214,3 +214,20 @@
   backdrop-filter: blur(var(--surface-blur));
   -webkit-backdrop-filter: blur(var(--surface-blur));
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .blob {
+    animation: none !important;
+  }
+  .glow-pulse {
+    animation: none !important;
+  }
+}
