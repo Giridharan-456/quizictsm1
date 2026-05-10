@@ -312,7 +312,7 @@ function SwipeOption({
         </div>
         {state === "idle" && (
           <span
-            className="shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground"
+            className="hidden shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground sm:hidden [@media(hover:none)]:inline"
             style={{ fontFamily: "var(--font-mono)" }}
           >
             swipe →
