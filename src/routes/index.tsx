@@ -32,6 +32,27 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 const CARD_GRADIENTS = ["var(--gradient-card-a)", "var(--gradient-card-b)"];
 
 function Home() {
+  const navigate = useNavigate();
+
+  // Desktop keyboard shortcuts: 1-9 opens the matching subject
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && /^(input|textarea|select)$/i.test(target.tagName)) return;
+      const n = parseInt(e.key, 10);
+      if (!Number.isNaN(n) && n >= 1 && n <= subjects.length) {
+        e.preventDefault();
+        navigate({
+          to: "/subject/$subjectId",
+          params: { subjectId: subjects[n - 1].id },
+        });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navigate]);
+
   return (
     <>
       <AmbientBackground />
