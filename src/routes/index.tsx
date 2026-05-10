@@ -154,7 +154,15 @@ function Home() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
+                    <div className="flex items-center gap-2">
+                      <kbd
+                        className="hidden rounded-md border border-border bg-background/50 px-1.5 py-0.5 text-[10px] text-muted-foreground md:inline-block"
+                        style={{ fontFamily: "var(--font-mono)" }}
+                      >
+                        {i + 1}
+                      </kbd>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
+                    </div>
                   </div>
                   <h3 className="relative mt-7 text-xl font-semibold leading-tight">
                     {s.name}
