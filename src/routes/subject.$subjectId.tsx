@@ -97,7 +97,7 @@ function SubjectPage() {
           Topics
         </h2>
 
-        <ul className="space-y-2">
+        <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {subject.topics.map((t, i) => (
             <li key={t.id}>
               <Link
