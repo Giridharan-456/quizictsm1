@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { ArrowLeft, ChevronRight, Layers, Shuffle } from "lucide-react";
 import { getSubject } from "@/lib/quiz";
 import { AmbientBackground } from "@/components/AmbientBackground";
