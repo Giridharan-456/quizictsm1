@@ -35,7 +35,7 @@ function SubjectPage() {
   return (
     <>
       <AmbientBackground />
-      <main className="relative z-10 mx-auto min-h-screen max-w-md px-5 pb-16 pt-6">
+      <main className="relative z-10 mx-auto min-h-screen w-full max-w-md px-5 pb-16 pt-6 md:max-w-3xl md:px-8 lg:max-w-5xl lg:px-12">
         <header className="flex items-center justify-between">
           <button
             onClick={() => navigate({ to: "/" })}
@@ -97,7 +97,7 @@ function SubjectPage() {
           Topics
         </h2>
 
-        <ul className="space-y-2">
+        <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {subject.topics.map((t, i) => (
             <li key={t.id}>
               <Link

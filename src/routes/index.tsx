@@ -34,7 +34,7 @@ function Home() {
   return (
     <>
       <AmbientBackground />
-      <main className="relative z-10 mx-auto min-h-screen max-w-md px-5 pb-16 pt-6">
+      <main className="relative z-10 mx-auto min-h-screen w-full max-w-md px-5 pb-16 pt-6 md:max-w-3xl md:px-8 lg:max-w-5xl lg:px-12">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div
@@ -65,7 +65,7 @@ function Home() {
           >
             Welcome back
           </div>
-          <h1 className="mt-2 text-[2.5rem] font-bold leading-[1.05] tracking-tight">
+          <h1 className="mt-2 text-[2.5rem] font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
             Master your <br />
             <span
               className="bg-clip-text text-transparent"
@@ -101,7 +101,7 @@ function Home() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {subjects.map((s, i) => {
               const Icon = ICONS[s.id] ?? Monitor;
               const total = s.topics.reduce(

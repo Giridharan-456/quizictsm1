@@ -78,6 +78,21 @@ function QuizPage() {
     [],
   );
 
+  // Keyboard shortcuts: A/B/C/D or 1/2/3/4
+  useEffect(() => {
+    if (!q || picked) return;
+    const onKey = (e: KeyboardEvent) => {
+      const map: Record<string, "A" | "B" | "C" | "D"> = {
+        a: "A", b: "B", c: "C", d: "D",
+        "1": "A", "2": "B", "3": "C", "4": "D",
+      };
+      const k = map[e.key.toLowerCase()];
+      if (k) onPick(k);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [q, picked]);
+
   const restart = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setIndex(0);
@@ -90,7 +105,7 @@ function QuizPage() {
   return (
     <>
       <AmbientBackground />
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-6">
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-10 pt-6 md:max-w-2xl md:px-8">
         <header className="flex items-center justify-between">
           <button
             onClick={() =>
@@ -146,7 +161,7 @@ function QuizPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-10 text-balance text-center text-xl font-semibold leading-snug"
+              className="mt-10 text-balance text-center text-xl font-semibold leading-snug md:text-2xl"
             >
               {q!.question}
             </motion.h1>
@@ -180,7 +195,7 @@ function QuizPage() {
                 ? picked === q!.answer
                   ? "Correct →"
                   : "Showing answer…"
-                : "Swipe an option right · or tap to select"}
+                : "Tap · swipe → · or press A B C D"}
             </p>
           </>
         )}
@@ -297,7 +312,7 @@ function SwipeOption({
         </div>
         {state === "idle" && (
           <span
-            className="shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground"
+            className="shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground [@media(hover:hover)]:hidden"
             style={{ fontFamily: "var(--font-mono)" }}
           >
             swipe →
