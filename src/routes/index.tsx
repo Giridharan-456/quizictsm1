@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Briefcase, Monitor, Sparkles, ArrowRight } from "lucide-react";
 import { subjects } from "@/lib/quiz";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
