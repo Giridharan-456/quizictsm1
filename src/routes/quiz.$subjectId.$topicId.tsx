@@ -226,9 +226,18 @@ function SwipeOption({
   );
   const locked = state !== "idle";
 
+  // Snap back whenever the option becomes locked so a swiped card never sticks offscreen
+  useEffect(() => {
+    if (locked) x.set(0);
+  }, [locked, x]);
+
   const onEnd = (_: unknown, info: PanInfo) => {
-    if (info.offset.x > 100) onPick();
-    else x.set(0);
+    if (info.offset.x > 100) {
+      x.set(0);
+      onPick();
+    } else {
+      x.set(0);
+    }
   };
 
   const stateRing =
