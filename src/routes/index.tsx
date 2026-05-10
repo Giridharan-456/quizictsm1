@@ -31,9 +31,10 @@ function Welcome() {
     if (existing) navigate({ to: "/home" });
   }, [navigate]);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const n = name.trim();
+    const data = new FormData(e.currentTarget);
+    const n = String(data.get("name") || "").trim();
     if (!n) return;
     setUserName(n);
     navigate({ to: "/home" });
@@ -68,6 +69,7 @@ function Welcome() {
             <User className="h-4 w-4 text-muted-foreground" />
             <input
               autoFocus
+              name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
@@ -76,7 +78,6 @@ function Welcome() {
           </div>
           <button
             type="submit"
-            disabled={!name.trim()}
             className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
           >
             Start Playing
