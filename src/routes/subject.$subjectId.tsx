@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { ArrowLeft, ChevronRight, Layers, Shuffle } from "lucide-react";
 import { getSubject } from "@/lib/quiz";
 import { AmbientBackground } from "@/components/AmbientBackground";
@@ -18,6 +19,39 @@ function SubjectPage() {
   const { subjectId } = Route.useParams();
   const navigate = useNavigate();
   const subject = getSubject(subjectId);
+
+  // Desktop keyboard shortcuts
+  useEffect(() => {
+    if (!subject) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && /^(input|textarea|select)$/i.test(target.tagName)) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        navigate({ to: "/" });
+        return;
+      }
+      if (e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        navigate({
+          to: "/quiz/$subjectId/$topicId",
+          params: { subjectId: subject.id, topicId: "all" },
+        });
+        return;
+      }
+      const n = parseInt(e.key, 10);
+      if (!Number.isNaN(n) && n >= 1 && n <= Math.min(9, subject.topics.length)) {
+        e.preventDefault();
+        navigate({
+          to: "/quiz/$subjectId/$topicId",
+          params: { subjectId: subject.id, topicId: subject.topics[n - 1].id },
+        });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [subject, navigate]);
 
   if (!subject) {
     return (
@@ -87,7 +121,15 @@ function SubjectPage() {
               </div>
             </div>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <kbd
+              className="hidden rounded-md border border-border bg-background/50 px-1.5 py-0.5 text-[10px] text-muted-foreground md:inline-block"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              S
+            </kbd>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
         </Link>
 
         <h2
@@ -120,7 +162,17 @@ function SubjectPage() {
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="flex shrink-0 items-center gap-2">
+                  {i < 9 && (
+                    <kbd
+                      className="hidden rounded-md border border-border bg-background/50 px-1.5 py-0.5 text-[10px] text-muted-foreground md:inline-block"
+                      style={{ fontFamily: "var(--font-mono)" }}
+                    >
+                      {i + 1}
+                    </kbd>
+                  )}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
               </Link>
             </li>
           ))}
