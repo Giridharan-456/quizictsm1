@@ -146,7 +146,7 @@ function QuizPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-10 text-balance text-center text-xl font-semibold leading-snug"
+              className="mt-10 text-balance text-center text-xl font-semibold leading-snug md:text-2xl"
             >
               {q!.question}
             </motion.h1>
