@@ -136,7 +136,7 @@
   --input: rgba(180, 220, 195, 0.16);
   --ring: #6ee7b7;
   --glow: rgba(110, 231, 183, 0.3);
-  --font-stack-display: "Roboto Flex", "Inter";
+  --font-stack-display: "Inter";
   --blob-a: #6ee7b7;
   --blob-b: #4ade80;
   --gradient-card-a: linear-gradient(135deg, #2f4636, #1c211a);
