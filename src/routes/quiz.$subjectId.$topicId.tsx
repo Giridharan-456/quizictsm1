@@ -163,26 +163,16 @@ function QuizPage() {
               ))}
             </div>
 
-            {picked && (
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={next}
-                className="mt-8 w-full rounded-2xl py-4 text-sm font-semibold text-[color:var(--primary-foreground)] glow-primary transition active:scale-[0.99]"
-                style={{ background: "var(--primary)" }}
-              >
-                {index + 1 === total ? "See results" : "Next question →"}
-              </motion.button>
-            )}
-
-            {!picked && (
-              <p
-                className="mt-7 text-center text-[10px] uppercase tracking-widest text-muted-foreground"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                Swipe an option right · or tap to select
-              </p>
-            )}
+            <p
+              className="mt-7 text-center text-[10px] uppercase tracking-widest text-muted-foreground"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {picked
+                ? picked === q!.answer
+                  ? "Correct →"
+                  : "Showing answer…"
+                : "Swipe an option right · or tap to select"}
+            </p>
           </>
         )}
       </main>
