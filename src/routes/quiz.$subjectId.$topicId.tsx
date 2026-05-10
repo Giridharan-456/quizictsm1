@@ -1,8 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  type PanInfo,
+} from "framer-motion";
 import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
-import { getSubject, getTopic, type Question } from "@/lib/quiz";
+import { getSubject, getTopic } from "@/lib/quiz";
+import { AmbientBackground } from "@/components/AmbientBackground";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 export const Route = createFileRoute("/quiz/$subjectId/$topicId")({
   head: () => ({
@@ -23,13 +30,12 @@ function QuizPage() {
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [score, setScore] = useState(0);
-  const [answered, setAnswered] = useState(0);
 
   if (!subject || !topic) {
     return (
       <main className="mx-auto max-w-md px-5 py-10">
         <p className="text-muted-foreground">Topic not found.</p>
-        <Link to="/home" className="mt-4 inline-block text-primary">
+        <Link to="/" className="mt-4 inline-block text-[color:var(--primary)]">
           Back home
         </Link>
       </main>
@@ -43,7 +49,6 @@ function QuizPage() {
   const onPick = (key: "A" | "B" | "C" | "D") => {
     if (picked || !q) return;
     setPicked(key);
-    setAnswered((n) => n + 1);
     if (key === q.answer) setScore((s) => s + 1);
   };
 
@@ -56,85 +61,119 @@ function QuizPage() {
     setIndex(0);
     setPicked(null);
     setScore(0);
-    setAnswered(0);
   };
 
+  const progress = (Math.min(index, total) / total) * 100;
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
-      <header className="flex items-center justify-between">
-        <button
-          onClick={() => navigate({ to: "/subject/$subjectId", params: { subjectId } })}
-          className="rounded-xl border border-border bg-card/60 p-2.5 text-muted-foreground transition hover:text-foreground"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div className="text-xs text-muted-foreground">
-          {Math.min(index + 1, total)} of {total} · score {score}
-        </div>
-      </header>
-
-      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full bg-primary transition-all"
-          style={{ width: `${(Math.min(index, total) / total) * 100}%` }}
-        />
-      </div>
-
-      {done ? (
-        <FinishedView
-          score={score}
-          total={total}
-          onRestart={restart}
-          backTo={subjectId}
-        />
-      ) : (
-        <>
-          <h1 className="mt-10 text-center text-xl font-semibold leading-snug">
-            {q!.question}
-          </h1>
-
-          <div className="mt-8 space-y-3">
-            {q!.options.map((o) => (
-              <SwipeOption
-                key={o.key}
-                optionKey={o.key}
-                text={o.text}
-                state={
-                  picked == null
-                    ? "idle"
-                    : o.key === q!.answer
-                      ? "correct"
-                      : o.key === picked
-                        ? "wrong"
-                        : "muted"
-                }
-                onPick={() => onPick(o.key)}
-              />
-            ))}
+    <>
+      <AmbientBackground />
+      <main className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-6">
+        <header className="flex items-center justify-between">
+          <button
+            onClick={() =>
+              navigate({ to: "/subject/$subjectId", params: { subjectId } })
+            }
+            aria-label="Back"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card backdrop-blur-md transition hover:border-[color:var(--ring)]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div
+            className="text-[11px] uppercase tracking-widest text-muted-foreground"
+            style={{ fontFamily: "var(--font-mono)" }}
+          >
+            {Math.min(index + 1, total).toString().padStart(2, "0")} /{" "}
+            {total.toString().padStart(2, "0")}
           </div>
+          <ThemeSwitcher />
+        </header>
 
-          {picked && (
-            <button
-              onClick={next}
-              className="mt-8 w-full rounded-2xl bg-primary py-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
-            >
-              {index + 1 === total ? "See results" : "Next question"}
-            </button>
-          )}
-
-          <p className="mt-6 text-center text-[11px] uppercase tracking-widest text-muted-foreground">
-            Swipe an option right to select
-          </p>
-        </>
-      )}
-
-      {!done && (
-        <div className="mt-auto pt-6 text-center text-xs text-muted-foreground">
-          {answered} answered · {Math.max(total - answered, 0)} left
+        <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-[color:var(--muted)]">
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: "var(--primary)" }}
+            initial={false}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          />
         </div>
-      )}
-    </main>
+
+        <div
+          className="mt-4 flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          <span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: "var(--success)" }}
+          />
+          score · {score}
+        </div>
+
+        {done ? (
+          <FinishedView
+            score={score}
+            total={total}
+            onRestart={restart}
+            backTo={subjectId}
+          />
+        ) : (
+          <>
+            <motion.h1
+              key={q!.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-10 text-balance text-center text-xl font-semibold leading-snug"
+            >
+              {q!.question}
+            </motion.h1>
+
+            <div className="mt-8 space-y-3">
+              {q!.options.map((o, i) => (
+                <SwipeOption
+                  key={`${q!.id}-${o.key}`}
+                  optionKey={o.key}
+                  text={o.text}
+                  index={i}
+                  state={
+                    picked == null
+                      ? "idle"
+                      : o.key === q!.answer
+                        ? "correct"
+                        : o.key === picked
+                          ? "wrong"
+                          : "muted"
+                  }
+                  onPick={() => onPick(o.key)}
+                />
+              ))}
+            </div>
+
+            {picked && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={next}
+                className="mt-8 w-full rounded-2xl py-4 text-sm font-semibold text-[color:var(--primary-foreground)] glow-primary transition active:scale-[0.99]"
+                style={{ background: "var(--primary)" }}
+              >
+                {index + 1 === total ? "See results" : "Next question →"}
+              </motion.button>
+            )}
+
+            {!picked && (
+              <p
+                className="mt-7 text-center text-[10px] uppercase tracking-widest text-muted-foreground"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                Swipe an option right · or tap to select
+              </p>
+            )}
+          </>
+        )}
+      </main>
+    </>
   );
 }
 
@@ -142,76 +181,118 @@ function SwipeOption({
   optionKey,
   text,
   state,
+  index,
   onPick,
 }: {
   optionKey: "A" | "B" | "C" | "D";
   text: string;
   state: "idle" | "correct" | "wrong" | "muted";
+  index: number;
   onPick: () => void;
 }) {
   const x = useMotionValue(0);
+  const glow = useTransform(x, [0, 140], [0, 1]);
   const bg = useTransform(
     x,
-    [0, 120],
-    ["var(--card)", "color-mix(in oklab, var(--primary) 30%, var(--card))"],
+    [0, 140],
+    ["var(--card)", "color-mix(in oklab, var(--primary) 35%, var(--card))"],
   );
   const locked = state !== "idle";
 
   const onEnd = (_: unknown, info: PanInfo) => {
-    if (info.offset.x > 90) {
-      onPick();
-    } else {
-      x.set(0);
-    }
+    if (info.offset.x > 100) onPick();
+    else x.set(0);
   };
 
-  const stateStyles =
+  const stateRing =
     state === "correct"
-      ? "border-[color:var(--success)] bg-[color-mix(in_oklab,var(--success)_22%,var(--card))]"
+      ? "border-[color:var(--success)]"
       : state === "wrong"
-        ? "border-destructive bg-[color-mix(in_oklab,var(--destructive)_22%,var(--card))]"
+        ? "border-[color:var(--destructive)]"
         : state === "muted"
-          ? "border-border bg-card/40 opacity-60"
-          : "border-border bg-card";
+          ? "border-border opacity-50"
+          : "border-border";
+
+  const stateBg =
+    state === "correct"
+      ? "color-mix(in oklab, var(--success) 22%, var(--card))"
+      : state === "wrong"
+        ? "color-mix(in oklab, var(--destructive) 22%, var(--card))"
+        : undefined;
+
+  const badgeBg =
+    state === "correct"
+      ? "var(--success)"
+      : state === "wrong"
+        ? "var(--destructive)"
+        : "var(--accent)";
+
+  const badgeFg =
+    state === "correct" || state === "wrong"
+      ? "#ffffff"
+      : "var(--accent-foreground)";
 
   return (
-    <motion.button
-      type="button"
-      onClick={() => !locked && onPick()}
-      drag={locked ? false : "x"}
-      dragConstraints={{ left: 0, right: 200 }}
-      dragElastic={0.15}
-      onDragEnd={onEnd}
-      style={locked ? undefined : { background: bg, x }}
-      whileTap={locked ? undefined : { scale: 0.99 }}
-      className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left transition-colors ${stateStyles}`}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
+      className="relative"
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-            state === "correct"
-              ? "bg-[color:var(--success)] text-background"
-              : state === "wrong"
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-accent text-accent-foreground"
-          }`}
-        >
-          {state === "correct" ? (
-            <Check className="h-4 w-4" />
-          ) : state === "wrong" ? (
-            <X className="h-4 w-4" />
-          ) : (
-            optionKey
-          )}
-        </span>
-        <span className="text-sm">{text}</span>
-      </div>
-      {state === "idle" && (
-        <span className="shrink-0 text-[11px] uppercase tracking-widest text-muted-foreground">
-          swipe →
-        </span>
+      {!locked && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{
+            opacity: glow,
+            boxShadow: "0 0 32px 2px var(--glow)",
+          }}
+        />
       )}
-    </motion.button>
+      <motion.button
+        type="button"
+        onClick={() => !locked && onPick()}
+        drag={locked ? false : "x"}
+        dragConstraints={{ left: 0, right: 220 }}
+        dragElastic={0.18}
+        onDragEnd={onEnd}
+        style={
+          locked
+            ? { background: stateBg }
+            : { background: bg, x }
+        }
+        whileTap={locked ? undefined : { scale: 0.99 }}
+        className={`relative flex w-full items-center justify-between gap-3 rounded-2xl border p-4 text-left backdrop-blur transition-colors ${stateRing}`}
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+            style={{
+              background: badgeBg,
+              color: badgeFg,
+              fontFamily: "var(--font-mono)",
+            }}
+          >
+            {state === "correct" ? (
+              <Check className="h-4 w-4" />
+            ) : state === "wrong" ? (
+              <X className="h-4 w-4" />
+            ) : (
+              optionKey
+            )}
+          </span>
+          <span className="text-sm">{text}</span>
+        </div>
+        {state === "idle" && (
+          <span
+            className="shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground"
+            style={{ fontFamily: "var(--font-mono)" }}
+          >
+            swipe →
+          </span>
+        )}
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -228,32 +309,40 @@ function FinishedView({
 }) {
   const pct = Math.round((score / total) * 100);
   return (
-    <div className="mt-16 text-center">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="mt-16 text-center"
+    >
       <div
-        className="mx-auto flex h-28 w-28 items-center justify-center rounded-full text-3xl font-bold text-white"
-        style={{ background: "var(--gradient-ictsm)" }}
+        className="mx-auto flex h-32 w-32 items-center justify-center rounded-full text-3xl font-bold text-[color:var(--primary-foreground)] glow-pulse"
+        style={{ background: "var(--gradient-card-a)" }}
       >
         {pct}%
       </div>
-      <h2 className="mt-6 text-2xl font-bold">Nice work!</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        You got {score} of {total} correct.
+      <h2 className="mt-6 text-2xl font-bold">Run complete</h2>
+      <p
+        className="mt-2 text-xs uppercase tracking-widest text-muted-foreground"
+        style={{ fontFamily: "var(--font-mono)" }}
+      >
+        {score} / {total} correct
       </p>
       <div className="mt-8 flex flex-col gap-3">
         <button
           onClick={onRestart}
-          className="flex items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+          className="flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-semibold text-[color:var(--primary-foreground)] glow-primary transition active:scale-[0.99]"
+          style={{ background: "var(--primary)" }}
         >
           <RotateCcw className="h-4 w-4" /> Try again
         </button>
         <Link
           to="/subject/$subjectId"
           params={{ subjectId: backTo }}
-          className="rounded-2xl border border-border bg-card/60 py-3 text-sm font-semibold transition hover:bg-card"
+          className="rounded-2xl border border-border bg-card py-3 text-sm font-semibold backdrop-blur transition hover:border-[color:var(--ring)]"
         >
           Choose another topic
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 }

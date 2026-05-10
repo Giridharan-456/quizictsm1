@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Briefcase, Monitor, Sparkles } from "lucide-react";
+import { Briefcase, Monitor, Sparkles, ArrowRight } from "lucide-react";
 import { subjects } from "@/lib/quiz";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { AmbientBackground } from "@/components/AmbientBackground";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -9,7 +11,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Practice ITI ICTSM 2nd Year theory and Employability Skills with swipe-to-answer flashcards.",
+          "Practice ITI ICTSM 2nd Year theory and Employability Skills with swipe-to-answer cards.",
       },
       { property: "og:title", content: "ICTSM Quiz" },
       {
@@ -26,66 +28,144 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "employability-skills": Briefcase,
 };
 
+const CARD_GRADIENTS = ["var(--gradient-card-a)", "var(--gradient-card-b)"];
+
 function Home() {
   return (
-    <main className="mx-auto min-h-screen max-w-md px-5 pb-12 pt-10">
-      <header className="flex flex-col items-center text-center">
-        <div
-          className="flex h-16 w-16 items-center justify-center rounded-3xl shadow-lg"
-          style={{ background: "var(--gradient-ictsm)" }}
-        >
-          <Sparkles className="h-8 w-8 text-white" />
-        </div>
-        <h1 className="mt-5 text-3xl font-bold tracking-tight">ICTSM Quiz</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Master your skills, one question at a time
-        </p>
-      </header>
-
-      <h2 className="mt-10 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        Subjects
-      </h2>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {subjects.map((s) => {
-          const Icon = ICONS[s.id] ?? Monitor;
-          const total = s.topics.reduce((n, t) => n + t.questions.length, 0);
-          return (
-            <Link
-              key={s.id}
-              to="/subject/$subjectId"
-              params={{ subjectId: s.id }}
-              className="group relative overflow-hidden rounded-3xl p-5 text-white shadow-[var(--shadow-card)] transition active:scale-[0.98]"
-              style={{ background: s.gradient }}
+    <>
+      <AmbientBackground />
+      <main className="relative z-10 mx-auto min-h-screen max-w-md px-5 pb-16 pt-6">
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-xl glow-primary"
+              style={{ background: "var(--gradient-card-a)" }}
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-                <Icon className="h-6 w-6 text-white" />
+              <Sparkles className="h-4.5 w-4.5 text-white" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold leading-tight">
+                ICTSM Quiz
               </div>
-              <h3 className="mt-8 text-2xl font-bold leading-tight">
-                {s.name}
-              </h3>
-              <div className="mt-4 flex items-end justify-between text-xs text-white/80">
-                <div>
-                  <div className="text-base font-semibold text-white">
-                    {s.topics.length}
-                  </div>
-                  <div>topics</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-base font-semibold text-white">
-                    {total}
-                  </div>
-                  <div>questions</div>
-                </div>
+              <div
+                className="text-[10px] uppercase tracking-widest text-muted-foreground"
+                style={{ fontFamily: "var(--font-mono)" }}
+              >
+                practice · learn
               </div>
-            </Link>
-          );
-        })}
-      </div>
+            </div>
+          </div>
+          <ThemeSwitcher />
+        </header>
 
-      <p className="mt-10 text-center text-xs text-muted-foreground">
-        ITI ICTSM 2nd Year · Practice &amp; Learn
-      </p>
-    </main>
+        <section className="mt-12">
+          <div
+            className="text-[11px] uppercase tracking-widest text-muted-foreground"
+            style={{ fontFamily: "var(--font-mono)" }}
+          >
+            Welcome back
+          </div>
+          <h1 className="mt-2 text-[2.5rem] font-bold leading-[1.05] tracking-tight">
+            Master your <br />
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "var(--gradient-card-a)" }}
+            >
+              skills.
+            </span>
+          </h1>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+            Swipe to answer. Learn at your own pace across {subjects.length}{" "}
+            subjects and{" "}
+            {subjects.reduce(
+              (n, s) => n + s.topics.reduce((m, t) => m + t.questions.length, 0),
+              0,
+            )}{" "}
+            questions.
+          </p>
+        </section>
+
+        <section className="mt-10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2
+              className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              Subjects
+            </h2>
+            <span
+              className="text-[10px] text-muted-foreground"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {subjects.length} total
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {subjects.map((s, i) => {
+              const Icon = ICONS[s.id] ?? Monitor;
+              const total = s.topics.reduce(
+                (n, t) => n + t.questions.length,
+                0,
+              );
+              return (
+                <Link
+                  key={s.id}
+                  to="/subject/$subjectId"
+                  params={{ subjectId: s.id }}
+                  className="group relative overflow-hidden rounded-3xl border border-border bg-card p-5 backdrop-blur-xl transition hover:border-[color:var(--ring)] active:scale-[0.99]"
+                >
+                  <div
+                    className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-40 blur-3xl transition group-hover:opacity-60"
+                    style={{
+                      background:
+                        CARD_GRADIENTS[i % CARD_GRADIENTS.length],
+                    }}
+                  />
+                  <div className="relative flex items-start justify-between">
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg"
+                      style={{
+                        background:
+                          CARD_GRADIENTS[i % CARD_GRADIENTS.length],
+                      }}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
+                  </div>
+                  <h3 className="relative mt-7 text-xl font-semibold leading-tight">
+                    {s.name}
+                  </h3>
+                  <p className="relative mt-1 text-xs text-muted-foreground">
+                    {s.description}
+                  </p>
+                  <div
+                    className="relative mt-5 flex items-center gap-4 text-[11px] text-muted-foreground"
+                    style={{ fontFamily: "var(--font-mono)" }}
+                  >
+                    <span>
+                      <span className="text-foreground">{s.topics.length}</span>{" "}
+                      topics
+                    </span>
+                    <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
+                    <span>
+                      <span className="text-foreground">{total}</span> questions
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <p
+          className="mt-12 text-center text-[10px] uppercase tracking-widest text-muted-foreground"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
+          ITI ICTSM · 2nd year
+        </p>
+      </main>
+    </>
   );
 }
