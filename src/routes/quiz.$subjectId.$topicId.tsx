@@ -78,6 +78,21 @@ function QuizPage() {
     [],
   );
 
+  // Keyboard shortcuts: A/B/C/D or 1/2/3/4
+  useEffect(() => {
+    if (!q || picked) return;
+    const onKey = (e: KeyboardEvent) => {
+      const map: Record<string, "A" | "B" | "C" | "D"> = {
+        a: "A", b: "B", c: "C", d: "D",
+        "1": "A", "2": "B", "3": "C", "4": "D",
+      };
+      const k = map[e.key.toLowerCase()];
+      if (k) onPick(k);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [q, picked]);
+
   const restart = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setIndex(0);
