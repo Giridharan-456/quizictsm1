@@ -4,7 +4,7 @@ import { THEMES, applyTheme, getStoredTheme, setStoredTheme, type ThemeId } from
 
 export function ThemeSwitcher() {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<ThemeId>("midnight");
+  const [active, setActive] = useState<ThemeId>("minimal");
 
   useEffect(() => {
     const t = getStoredTheme();
