@@ -30,7 +30,7 @@ function SubjectPage() {
     );
   }
 
-  const total = subject.topics.reduce((n, t) => n + t.questions.length, 0);
+  const total = subject.topics.reduce((n, t) => n + t.count, 0);
 
   return (
     <>
@@ -115,7 +115,7 @@ function SubjectPage() {
                       className="text-[11px] text-muted-foreground"
                       style={{ fontFamily: "var(--font-mono)" }}
                     >
-                      {String(i + 1).padStart(2, "0")} · {t.questions.length}{" "}
+                      {String(i + 1).padStart(2, "0")} · {t.count}{" "}
                       questions
                     </div>
                   </div>

@@ -78,7 +78,7 @@ function Home() {
             Swipe to answer. Learn at your own pace across {subjects.length}{" "}
             subjects and{" "}
             {subjects.reduce(
-              (n, s) => n + s.topics.reduce((m, t) => m + t.questions.length, 0),
+              (n, s) => n + s.topics.reduce((m, t) => m + t.count, 0),
               0,
             )}{" "}
             questions.
@@ -105,7 +105,7 @@ function Home() {
             {subjects.map((s, i) => {
               const Icon = ICONS[s.id] ?? Monitor;
               const total = s.topics.reduce(
-                (n, t) => n + t.questions.length,
+                (n, t) => n + t.count,
                 0,
               );
               return (

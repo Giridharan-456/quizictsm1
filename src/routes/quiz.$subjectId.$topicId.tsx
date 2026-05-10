@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -7,7 +7,7 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
-import { getSubject, getTopic } from "@/lib/quiz";
+import { getSubject, loadTopic, type Question } from "@/lib/quiz";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
@@ -18,14 +18,23 @@ export const Route = createFileRoute("/quiz/$subjectId/$topicId")({
       { name: "description", content: "Swipe to select your answer." },
     ],
   }),
+  loader: async ({ params }) => {
+    const topic = await loadTopic(params.subjectId, params.topicId);
+    return { topic };
+  },
+  pendingComponent: () => (
+    <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-5">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[color:var(--primary)] border-t-transparent" />
+    </main>
+  ),
   component: QuizPage,
 });
 
 function QuizPage() {
-  const { subjectId, topicId } = Route.useParams();
+  const { subjectId } = Route.useParams();
+  const { topic } = Route.useLoaderData();
   const navigate = useNavigate();
   const subject = getSubject(subjectId);
-  const topic = useMemo(() => getTopic(subjectId, topicId), [subjectId, topicId]);
 
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<"A" | "B" | "C" | "D" | null>(null);
@@ -44,7 +53,7 @@ function QuizPage() {
 
   const total = topic.questions.length;
   const done = index >= total;
-  const q = !done ? topic.questions[index] : null;
+  const q: Question | null = !done ? topic.questions[index] : null;
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
