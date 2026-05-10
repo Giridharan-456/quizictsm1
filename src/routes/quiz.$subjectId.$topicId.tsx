@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -46,18 +46,31 @@ function QuizPage() {
   const done = index >= total;
   const q = !done ? topic.questions[index] : null;
 
-  const onPick = (key: "A" | "B" | "C" | "D") => {
-    if (picked || !q) return;
-    setPicked(key);
-    if (key === q.answer) setScore((s) => s + 1);
-  };
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const next = () => {
+  const advance = () => {
     setPicked(null);
     setIndex((i) => i + 1);
   };
 
+  const onPick = (key: "A" | "B" | "C" | "D") => {
+    if (picked || !q) return;
+    setPicked(key);
+    const correct = key === q.answer;
+    if (correct) setScore((s) => s + 1);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(advance, correct ? 450 : 1500);
+  };
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
+
   const restart = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setIndex(0);
     setPicked(null);
     setScore(0);
@@ -150,26 +163,16 @@ function QuizPage() {
               ))}
             </div>
 
-            {picked && (
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={next}
-                className="mt-8 w-full rounded-2xl py-4 text-sm font-semibold text-[color:var(--primary-foreground)] glow-primary transition active:scale-[0.99]"
-                style={{ background: "var(--primary)" }}
-              >
-                {index + 1 === total ? "See results" : "Next question →"}
-              </motion.button>
-            )}
-
-            {!picked && (
-              <p
-                className="mt-7 text-center text-[10px] uppercase tracking-widest text-muted-foreground"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                Swipe an option right · or tap to select
-              </p>
-            )}
+            <p
+              className="mt-7 text-center text-[10px] uppercase tracking-widest text-muted-foreground"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {picked
+                ? picked === q!.answer
+                  ? "Correct →"
+                  : "Showing answer…"
+                : "Swipe an option right · or tap to select"}
+            </p>
           </>
         )}
       </main>
