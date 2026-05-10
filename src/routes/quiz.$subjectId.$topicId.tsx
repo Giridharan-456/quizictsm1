@@ -195,7 +195,7 @@ function QuizPage() {
                 ? picked === q!.answer
                   ? "Correct →"
                   : "Showing answer…"
-                : "Swipe an option right · or tap to select"}
+                : "Tap · swipe → · or press A B C D"}
             </p>
           </>
         )}
