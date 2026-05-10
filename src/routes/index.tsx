@@ -101,7 +101,7 @@ function Home() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {subjects.map((s, i) => {
               const Icon = ICONS[s.id] ?? Monitor;
               const total = s.topics.reduce(
