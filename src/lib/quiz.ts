@@ -192,11 +192,14 @@ export async function loadTopic(
   try {
     if (topicId === "all") {
       name = "All Topics Shuffled";
-      questions = shuffle(
-        Object.entries(raw).flatMap(([t, value]) =>
-          toQuestions(value, slug(t)),
-        ),
+      // Validate every topic so per-topic counts populate, then flatten + shuffle.
+      const perTopic = Object.entries(raw).map(
+        ([t, value]) => [slug(t), toQuestions(value, slug(t))] as const,
       );
+      for (const [tid, qs] of perTopic) {
+        countCache.set(`${subjectId}:${tid}`, qs.length);
+      }
+      questions = shuffle(perTopic.flatMap(([, qs]) => qs));
     } else {
       const entry = Object.entries(raw).find(([n]) => slug(n) === topicId);
       if (!entry) return null;
@@ -211,6 +214,7 @@ export async function loadTopic(
     return { name: name || topicId, questions: [] };
   }
 
+  countCache.set(cacheKey, questions.length);
   cache.set(cacheKey, questions);
   return { name, questions };
 }
