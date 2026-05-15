@@ -1,11 +1,32 @@
 import { SUBJECTS, getSubjectMeta } from "./subjects-meta";
 
+export type AnswerKey = "A" | "B" | "C" | "D";
+
 export type Question = {
   id: string;
   question: string;
-  options: { key: "A" | "B" | "C" | "D"; text: string }[];
-  answer: "A" | "B" | "C" | "D";
+  options: { key: AnswerKey; text: string }[];
+  answer: AnswerKey;
 };
+
+/** Raw question shape as stored in the JSON data files. */
+type RawQuestion = {
+  question?: unknown;
+  option_a?: unknown;
+  option_b?: unknown;
+  option_c?: unknown;
+  option_d?: unknown;
+  answer?: unknown;
+};
+
+/**
+ * Each subject's JSON is one of:
+ *   { "Topic Name": RawQuestion[] }                       (employability_skills)
+ *   { "Topic Name": { questions: RawQuestion[] } }        (ictsm_theory)
+ * We normalize both shapes in `extractQuestionArray`.
+ */
+type TopicValue = RawQuestion[] | { questions?: RawQuestion[] } | unknown;
+type SubjectData = Record<string, TopicValue>;
 
 const slug = (s: string) =>
   s
@@ -23,12 +44,14 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 // Vite dynamic-import: each subject becomes its own chunk, loaded only when a quiz starts.
-const loaders: Record<string, () => Promise<Record<string, any[]>>> = {
+const loaders: Record<string, () => Promise<SubjectData>> = {
   "ictsm-theory": () =>
-    import("@/data/ictsm_theory.json").then((m) => m.default ?? (m as any)),
+    import("@/data/ictsm_theory.json").then(
+      (m) => (m.default ?? (m as unknown)) as SubjectData,
+    ),
   "employability-skills": () =>
     import("@/data/employability_skills.json").then(
-      (m) => m.default ?? (m as any),
+      (m) => (m.default ?? (m as unknown)) as SubjectData,
     ),
 };
 
@@ -38,20 +61,50 @@ function isValidOption(v: unknown): v is string {
   if (typeof v !== "string") return false;
   const t = v.trim();
   if (!t) return false;
-  // Reject single punctuation-only fragments like "," "." "?" that came from broken parsing.
+  // Reject single punctuation-only fragments like "," "." "?" from broken parsing.
   if (t.length <= 1 && !/[a-z0-9]/i.test(t)) return false;
   return true;
 }
 
-function toQuestions(raw: any[], topicSlug: string): Question[] {
+function isAnswerKey(v: unknown): v is AnswerKey {
+  return v === "A" || v === "B" || v === "C" || v === "D";
+}
+
+/** Normalize a topic value (array OR { questions: [...] }) into a RawQuestion[]. */
+function extractQuestionArray(value: TopicValue): RawQuestion[] {
+  if (Array.isArray(value)) return value as RawQuestion[];
+  if (value && typeof value === "object") {
+    const inner = (value as { questions?: unknown }).questions;
+    if (Array.isArray(inner)) return inner as RawQuestion[];
+  }
+  return [];
+}
+
+/**
+ * Convert a raw topic payload into validated `Question`s.
+ * Accepts either a direct array or an object with a `questions` array.
+ */
+function toQuestions(raw: TopicValue, topicSlug: string): Question[] {
+  const list = extractQuestionArray(raw);
   const out: Question[] = [];
-  raw.forEach((q, i) => {
+
+  list.forEach((q, i) => {
+    if (!q || typeof q !== "object") return;
+
     const opts = [q.option_a, q.option_b, q.option_c, q.option_d];
     if (!opts.every(isValidOption)) return;
+
     // Drop questions where all options are identical (corrupt rows).
-    const uniq = new Set(opts.map((o: string) => o.trim().toLowerCase()));
+    const uniq = new Set(opts.map((o) => o.trim().toLowerCase()));
     if (uniq.size < 2) return;
-    if (!q.question || typeof q.question !== "string" || !q.question.trim()) return;
+
+    if (typeof q.question !== "string" || !q.question.trim()) return;
+
+    // Normalize answer key — fall back to "A" if invalid/missing.
+    const rawAnswer =
+      typeof q.answer === "string" ? q.answer.trim().toUpperCase() : "";
+    const answer: AnswerKey = isAnswerKey(rawAnswer) ? rawAnswer : "A";
+
     out.push({
       id: `${topicSlug}-${i}`,
       question: q.question,
@@ -61,9 +114,10 @@ function toQuestions(raw: any[], topicSlug: string): Question[] {
         { key: "C", text: opts[2] },
         { key: "D", text: opts[3] },
       ],
-      answer: (q.answer || "A").trim().toUpperCase() as "A",
+      answer,
     });
   });
+
   return out;
 }
 
@@ -73,6 +127,7 @@ export async function loadTopic(
 ): Promise<{ name: string; questions: Question[] } | null> {
   const meta = getSubjectMeta(subjectId);
   if (!meta) return null;
+
   const cacheKey = `${subjectId}:${topicId}`;
   if (cache.has(cacheKey)) {
     return {
@@ -84,20 +139,41 @@ export async function loadTopic(
     };
   }
 
-  const raw = await loaders[subjectId]();
-  let questions: Question[] = [];
-  let name = "";
+  const loader = loaders[subjectId];
+  if (!loader) return null;
 
-  if (topicId === "all") {
-    name = "All Topics Shuffled";
-    questions = shuffle(
-      Object.entries(raw).flatMap(([t, qs]) => toQuestions(qs, slug(t))),
+  let raw: SubjectData;
+  try {
+    raw = await loader();
+  } catch (err) {
+    // Network/parse failure — return empty so the UI can show a graceful state.
+    console.error(`[quiz] failed to load subject "${subjectId}":`, err);
+    return { name: topicId, questions: [] };
+  }
+
+  let name = "";
+  let questions: Question[] = [];
+
+  try {
+    if (topicId === "all") {
+      name = "All Topics Shuffled";
+      questions = shuffle(
+        Object.entries(raw).flatMap(([t, value]) =>
+          toQuestions(value, slug(t)),
+        ),
+      );
+    } else {
+      const entry = Object.entries(raw).find(([n]) => slug(n) === topicId);
+      if (!entry) return null;
+      name = entry[0].trim();
+      questions = toQuestions(entry[1], topicId);
+    }
+  } catch (err) {
+    console.error(
+      `[quiz] failed to parse topic "${topicId}" of subject "${subjectId}":`,
+      err,
     );
-  } else {
-    const entry = Object.entries(raw).find(([n]) => slug(n) === topicId);
-    if (!entry) return null;
-    name = entry[0].trim();
-    questions = toQuestions(entry[1], topicId);
+    return { name: name || topicId, questions: [] };
   }
 
   cache.set(cacheKey, questions);
