@@ -10,7 +10,7 @@ export const SUBJECTS: SubjectMeta[] = [
       {
         "id": "linux-operating-system",
         "name": "Linux operating system",
-        "count": 20
+        "count": 18
       },
       {
         "id": "printer-and-scanner",
@@ -20,7 +20,7 @@ export const SUBJECTS: SubjectMeta[] = [
       {
         "id": "monitor-and-sound-card",
         "name": "Monitor and Sound Card",
-        "count": 25
+        "count": 24
       },
       {
         "id": "ups-and-modem",
