@@ -87,18 +87,31 @@ function extractQuestionArray(value: TopicValue): RawQuestion[] {
 function toQuestions(raw: TopicValue, topicSlug: string): Question[] {
   const list = extractQuestionArray(raw);
   const out: Question[] = [];
+  let dropped = 0;
 
   list.forEach((q, i) => {
-    if (!q || typeof q !== "object") return;
+    if (!q || typeof q !== "object") {
+      dropped++;
+      return;
+    }
 
     const opts = [q.option_a, q.option_b, q.option_c, q.option_d];
-    if (!opts.every(isValidOption)) return;
+    if (!opts.every(isValidOption)) {
+      dropped++;
+      return;
+    }
 
     // Drop questions where all options are identical (corrupt rows).
     const uniq = new Set(opts.map((o) => o.trim().toLowerCase()));
-    if (uniq.size < 2) return;
+    if (uniq.size < 2) {
+      dropped++;
+      return;
+    }
 
-    if (typeof q.question !== "string" || !q.question.trim()) return;
+    if (typeof q.question !== "string" || !q.question.trim()) {
+      dropped++;
+      return;
+    }
 
     // Normalize answer key — fall back to "A" if invalid/missing.
     const rawAnswer =
@@ -118,7 +131,29 @@ function toQuestions(raw: TopicValue, topicSlug: string): Question[] {
     });
   });
 
+  if (dropped > 0) {
+    console.warn(
+      `[quiz] "${topicSlug}": filtered ${dropped} invalid question(s) out of ${list.length}.`,
+    );
+  }
+
   return out;
+}
+
+/**
+ * Runtime cache of validated counts per subject/topic, populated as topics load.
+ * The UI can call `getValidatedCount` to reflect post-filter numbers without
+ * altering the static meta shape.
+ */
+const countCache = new Map<string, number>();
+
+/** Validated question count for a loaded topic, or null if not loaded yet. */
+export function getValidatedCount(
+  subjectId: string,
+  topicId: string,
+): number | null {
+  const v = countCache.get(`${subjectId}:${topicId}`);
+  return typeof v === "number" ? v : null;
 }
 
 export async function loadTopic(
