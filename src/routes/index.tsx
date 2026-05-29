@@ -20,7 +20,10 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string; strokeWidth?: number }>
+> = {
   "ictsm-theory": Monitor,
   "employability-skills": Briefcase,
 };
